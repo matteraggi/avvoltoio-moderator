@@ -163,14 +163,14 @@ function getAuthenticationToken(event) {
       localStorage.setItem("id_token", data.id_token);
     })
     .catch((error) => {
-      const error = document.getElementById("error");
+      const errorLogin = document.getElementById("errorLogin");
       const userElement = document.createElement("div");
 
       userElement.innerHTML = `
     <p>Login Fallito, riprova</p>
   `;
 
-      error.appendChild(userElement);
+      errorLogin.appendChild(userElement);
       console.error("Errore durante la chiamata API:", error);
     });
 }
@@ -215,14 +215,14 @@ function registerAccount(event) {
       localStorage.setItem("id_token", data.id_token);
     })
     .catch((error) => {
-      const error = document.getElementById("error");
+      const errorReg = document.getElementById("errorReg");
       const userElement = document.createElement("div");
 
       userElement.innerHTML = `
     <p>Registrazione Fallita, riprova</p>
   `;
 
-      error.appendChild(userElement);
+      errorReg.appendChild(userElement);
       console.error("Errore durante la chiamata API:", error);
     });
 }
