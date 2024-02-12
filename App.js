@@ -28,18 +28,13 @@ const routes = {
     title: "Login | " + pageTitle,
     description: "Login Page",
   },
-  register: {
-    template: "/templates/register.html",
-    title: "Register | " + pageTitle,
-    description: "Register Page",
-  },
 };
 
 const urlLocationHandler = async () => {
-  const isAuthenticated = localStorage.getItem("user_id") !== null;
-
+  const isAuthenticated = true;
+  //localStorage.getItem("user_id") !== null
   // Verifica se l'utente è autenticato
-  if (!isAuthenticated && window.location.hash != "#register") {
+  if (!isAuthenticated) {
     // Se l'utente non è autenticato, reindirizza alla pagina di login
     window.location.hash = "#login";
   }
@@ -65,17 +60,13 @@ urlLocationHandler();
 const loadAndManipulateTemplate = async () => {
   // Ottieni l'elemento userList dal template
   const userList = document.getElementById("userList");
+  const squealList = document.getElementById("squealList");
+  const channelList = document.getElementById("channelList");
 
   // Verifica che userList sia stato trovato nell'elemento corrente del template
   if (userList) {
     //API LIST USERS
-
-    const users = [
-      { id: 1, name: "Utente 1", type: "Normale", popularity: 10 },
-      { id: 2, name: "Utente 2", type: "Premium", popularity: 20 },
-      { id: 3, name: "Utente 3", type: "Normale", popularity: 5 },
-      // Aggiungi altri utenti secondo le necessità
-    ];
+    const users = listUsers();
 
     // Pulisci la lista utenti prima di aggiornarla
     userList.innerHTML = "";
@@ -127,6 +118,26 @@ function increaseCharacters(userId) {
   console.log(`Caratteri aumentati per utente ${userId}`);
 }
 
+function listUsers() {
+  const url = baseUrl + "api/account/list-users";
+  fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("id_token"),
+    },
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      console.error("Errore durante la chiamata API:", error);
+    });
+}
+
 function getAuthenticationToken(event) {
   event.preventDefault(); // Previene il comportamento predefinito del form (ad es. ricaricare la pagina)
   const url = baseUrl + "api/authenticate/admin";
@@ -173,64 +184,4 @@ function getAuthenticationToken(event) {
       errorLogin.appendChild(userElement);
       console.error("Errore durante la chiamata API:", error);
     });
-}
-
-function registerAccount(event) {
-  event.preventDefault(); // Previene il comportamento predefinito del form (ad es. ricaricare la pagina)
-  const url = baseUrl + "api/register/admin";
-
-  // Ottieni i valori degli input del form
-  const username = document.getElementById("username").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  console.log("Username:", username);
-  console.log("Email:", email);
-  console.log("Password:", password);
-
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      login: username,
-      email: email,
-      password: password,
-      langKey: "en",
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        document.getElementById("username").value = "";
-        document.getElementById("email").value = "";
-        document.getElementById("password").value = "";
-      } else {
-        window.location.hash = "#/";
-      }
-      //reindirizza verso home
-      return response.json();
-    })
-    .then((data) => {
-      localStorage.setItem("id_token", data.id_token);
-    })
-    .catch((error) => {
-      const errorReg = document.getElementById("errorReg");
-      const userElement = document.createElement("div");
-
-      userElement.innerHTML = `
-    <p>Registrazione Fallita, riprova</p>
-  `;
-
-      errorReg.appendChild(userElement);
-      console.error("Errore durante la chiamata API:", error);
-    });
-}
-
-function registerPage() {
-  window.location.hash = "#register";
-}
-
-function loginPage() {
-  window.location.hash = "#login";
 }
