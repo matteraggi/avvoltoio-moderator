@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+  </head>
+  <body>
+    <section class="flex align-middle h-screen justify-center">
+      <div
+        class="flex-col justify-center align-middle border-4 p-8 rounded-2xl border-black h-fit"
+      >
+        <h1 class="text-[40px] font-bold pb-5">Squealer Admin Log In</h1>
+        <form
+          onsubmit="getAuthenticationToken(event)"
+          class="flex flex-col justify-center"
+        >
+          <label for="username">Username</label>
+          <input
+            value=""
+            type="username"
+            placeholder="canny"
+            id="username"
+            name="username"
+            class="w-auto p-2 border-gray-400 border-2 text-[18px] mt-2 mb-2"
+          />
+          <label for="password">Password</label>
+          <input
+            value=""
+            type="password"
+            placeholder="1234"
+            id="password"
+            name="password"
+            class="w-auto p-2 border-gray-400 border-2 text-[18px] mb-4 mt-2"
+          />
+          <button
+            type="submit"
+            class="border-2 rounded-2xl bg-[#4b2ca0] text-white p-2 font-semibold"
+          >
+            Log In
+          </button>
+        </form>
+        <p class="chang-auth mt-3">Non hai un Account?</p>
+        <div class="flex gap-2 pt-1">
+          <button
+            class="border-2 border-[#4b2ca0] rounded-2xl bg-white text-[#4b2ca0] p-2 font-semibold"
+            onclick="registerPage()"
+          >
+            Registrati
+          </button>
+        </div>
+      </div>
+    </section>
+    <div id="error"></div>
+  </body>
+</html>
