@@ -1,6 +1,7 @@
-// Routing
+//! ROUTING E AUTHENTICATION
 const pageTitle = "Squealer Moderator Dashboard";
 const baseUrl = "http://localhost:8000/";
+const size = 5;
 
 const routes = {
   404: {
@@ -30,114 +31,6 @@ const routes = {
   },
 };
 
-const urlLocationHandler = async () => {
-  const isAuthenticated = true;
-  //localStorage.getItem("user_id") !== null
-  // Verifica se l'utente è autenticato
-  if (!isAuthenticated) {
-    // Se l'utente non è autenticato, reindirizza alla pagina di login
-    window.location.hash = "#login";
-  }
-
-  var location = window.location.hash.replace("#", "");
-  console.log(location);
-  if (location.length == 0) {
-    location = "#/";
-  }
-
-  const route = routes[location] || routes["404"];
-  const html = await fetch(route.template).then((res) => res.text());
-  document.getElementById("content").innerHTML = html;
-  document.title = route.title;
-  await loadAndManipulateTemplate();
-};
-
-window.addEventListener("hashchange", urlLocationHandler);
-urlLocationHandler();
-
-//!  HOME/USER PAGE
-// Funzione per caricare e manipolare il template contenente userList
-const loadAndManipulateTemplate = async () => {
-  // Ottieni l'elemento userList dal template
-  const userList = document.getElementById("userList");
-  const squealList = document.getElementById("squealList");
-  const channelList = document.getElementById("channelList");
-
-  // Verifica che userList sia stato trovato nell'elemento corrente del template
-  if (userList) {
-    //API LIST USERS
-    const users = listUsers();
-
-    // Pulisci la lista utenti prima di aggiornarla
-    userList.innerHTML = "";
-
-    // Itera sugli utenti e crea un elemento HTML per ciascuno
-    users.forEach((user) => {
-      const userElement = document.createElement("div");
-      userElement.classList.add("user");
-      userElement.innerHTML = `
-        <h2>${user.name}</h2>
-        <p><strong>Tipo:</strong> ${user.type}</p>
-        <p><strong>Popolarità:</strong> ${user.popularity}</p>
-        <button onclick="blockUser(${user.id})">Blocca</button>
-        <button onclick="unblockUser(${user.id})">Riabilita</button>
-        <button onclick="increaseCharacters(${user.id})">Aumenta Caratteri</button>
-      `;
-      userList.appendChild(userElement);
-    });
-  }
-};
-
-const loadTemplate = async () => {
-  await loadAndManipulateTemplate();
-};
-
-// Esegui la funzione all'avvio per la prima pagina
-window.onload = function () {
-  loadTemplate();
-};
-
-// Funzione per bloccare un utente
-function blockUser(userId) {
-  // Esegui la richiesta API per bloccare l'utente con l'ID specificato
-  // Sostituire questa chiamata con la chiamata reale alla tua API
-  console.log(`Utente ${userId} bloccato`);
-}
-
-// Funzione per riabilitare un utente
-function unblockUser(userId) {
-  // Esegui la richiesta API per riabilitare l'utente con l'ID specificato
-  // Sostituire questa chiamata con la chiamata reale alla tua API
-  console.log(`Utente ${userId} riabilitato`);
-}
-
-// Funzione per aumentare i caratteri di un utente
-function increaseCharacters(userId) {
-  // Esegui la richiesta API per aumentare i caratteri per l'utente con l'ID specificato
-  // Sostituire questa chiamata con la chiamata reale alla tua API
-  console.log(`Caratteri aumentati per utente ${userId}`);
-}
-
-function listUsers() {
-  const url = baseUrl + "api/account/list-users";
-  fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + localStorage.getItem("id_token"),
-    },
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      console.error("Errore durante la chiamata API:", error);
-    });
-}
-
 function getAuthenticationToken(event) {
   event.preventDefault(); // Previene il comportamento predefinito del form (ad es. ricaricare la pagina)
   const url = baseUrl + "api/authenticate/admin";
@@ -161,19 +54,19 @@ function getAuthenticationToken(event) {
     }),
   })
     .then((response) => {
-      if (!response.ok) {
-        document.getElementById("username").value = "";
-        document.getElementById("password").value = "";
-      } else {
-        window.location.hash = "#/";
-      }
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
       //reindirizza verso home
       return response.json();
     })
     .then((data) => {
-      localStorage.setItem("id_token", data.id_token);
+      if (data.id_token !== undefined && data.id_token !== null) {
+        localStorage.setItem("id_token", data.id_token);
+        window.location.hash = "#squeal";
+      }
     })
     .catch((error) => {
+      console.log(error);
       const errorLogin = document.getElementById("errorLogin");
       const userElement = document.createElement("div");
 
@@ -184,4 +77,242 @@ function getAuthenticationToken(event) {
       errorLogin.appendChild(userElement);
       console.error("Errore durante la chiamata API:", error);
     });
+}
+
+const urlLocationHandler = async () => {
+  const isAuthenticated = localStorage.getItem("id_token") !== null;
+  // Verifica se l'utente è autenticato
+  if (!isAuthenticated) {
+    // Se l'utente non è autenticato, reindirizza alla pagina di login
+    window.location.hash = "#login";
+  }
+
+  var location = window.location.hash.replace("#", "");
+  console.log(location);
+  if (location.length == 0) {
+    location = "#/";
+  }
+
+  const route = routes[location] || routes["404"];
+  const html = await fetch(route.template).then((res) => res.text());
+  document.getElementById("content").innerHTML = html;
+  document.title = route.title;
+  await loadAndManipulateTemplate();
+};
+
+window.addEventListener("hashchange", urlLocationHandler);
+urlLocationHandler();
+
+// Funzione per caricare e manipolare il template contenente userList
+const loadAndManipulateTemplate = async () => {
+  pageNum = 0;
+  // Ottieni l'elemento userList dal template
+  const userList = document.getElementById("userList");
+  const squealList = document.getElementById("squealList");
+  const channelList = document.getElementById("channelList");
+
+  // Verifica che userList sia stato trovato nell'elemento corrente del template
+  //!  HOME/USER PAGE
+  if (userList) {
+    //API LIST USERS
+    const users = await listUsers();
+    console.log(users);
+
+    // Pulisci la lista utenti prima di aggiornarla
+    userList.innerHTML = "";
+
+    // Itera sugli utenti e crea un elemento HTML per ciascuno
+    var url = "";
+    users.forEach((user) => {
+      const userElement = document.createElement("div");
+      userElement.classList.add("user");
+
+      if (user?.img[0] != null) {
+        url = `data: ${user.img_content_type}  ;base64, ${user.img}`;
+      }
+      userElement.innerHTML = `
+      <div class="list-element" data-user-login="${user?.login}">
+      <div class="el1">
+      ${
+        user.img_content_type
+          ? `<img class="list-image" src="${url}" alt="Avatar" />`
+          : `<img class="list-image" src="/favicon.ico" alt="Avatar" />`
+      }
+        <h2 class="list-header">${user?.login}</h2>
+        <p class="list-text"><strong>Mail:</strong> ${user?.email}</p>
+        <p class="list-text"><strong>Auth:</strong> ${user?.authorities}</p>
+        </div>
+        <div>
+        ${
+          user.activated
+            ? `<button class="list-button color-red" onclick="blockUser('${user?.login}', false)">Blocca</button>`
+            : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">Sblocca</button>`
+        }
+        <button class="list-button color-purple" onclick="">Cambia Caratteri</button>
+        </div>
+      </div>
+      `;
+      userList.appendChild(userElement);
+    });
+    //!  SQUEAL PAGE
+  } else if (squealList) {
+  }
+  //!  CHANNEL PAGE
+  else if (channelList) {
+  }
+
+  const loadMoreButton = document.getElementById("loadMoreUsers");
+  if (loadMoreButton) {
+    loadMoreButton.addEventListener("click", async function () {
+      try {
+        await loadMoreUsers();
+      } catch (error) {
+        console.error("Errore durante il caricamento degli utenti:", error);
+      }
+    });
+  }
+};
+
+const loadTemplate = async () => {
+  await loadAndManipulateTemplate();
+};
+
+// Esegui la funzione all'avvio per la prima pagina
+window.onload = function () {
+  loadTemplate();
+};
+
+//! USER SECTION
+
+var pageNum = 0;
+const listUsers = async () => {
+  console.log("listUsers");
+  const url = baseUrl + `api/account/list-users/?page=${pageNum}&size=${size}`;
+  console.log(url);
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const loadMoreUsers = async () => {
+  console.log("loadMoreUsers");
+  pageNum++; // Incrementa il numero di pagina corrente
+  const users = await listUsers();
+
+  const userList = document.getElementById("userList");
+  if (userList) {
+    var url = "";
+    // Itera sugli utenti e crea un elemento HTML per ciascuno
+    users.forEach((user) => {
+      const userElement = document.createElement("div");
+      userElement.classList.add("user");
+
+      if (user?.img[0] != null) {
+        url = `data: ${user.img_content_type}  ;base64, ${user.img}`;
+      }
+
+      userElement.innerHTML = `
+        <div class="list-element" data-user-login="${user?.login}">
+        <div class="el1">
+          ${
+            user.img_content_type
+              ? `<img class="list-image" src="${url}" alt="Avatar" />`
+              : `<img class="list-image" src="/favicon.ico" alt="Avatar" />`
+          }
+          <h2 class="list-header">${user?.login}</h2>
+          <p class="list-text"><strong>Mail:</strong> ${user?.email}</p>
+          <p class="list-text"><strong>Auth:</strong> ${user?.authorities}</p>
+          </div>
+          <div>
+          ${
+            user.activated
+              ? `<button  class="list-button color-red" onclick="blockUser('${user?.login}', false)">Blocca</button>`
+              : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">Sblocca</button>`
+          }
+
+          <button class="list-button color-purple">Cambia Caratteri</button>
+          </div>
+        </div>
+              `;
+      userList.appendChild(userElement); // Aggiungi il nuovo elemento utente alla lista utenti
+    });
+  }
+};
+
+// Funzione per bloccare un utente
+async function blockUser(userLogin, block) {
+  try {
+    const response = await fetch(
+      baseUrl + `api/users/block/?username=${userLogin}&block=${block}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("id_token"),
+        },
+      }
+    );
+    if (response.ok) {
+      const userElement = document.querySelector(
+        `[data-user-login="${userLogin}"]`
+      );
+      const blockButton = userElement.querySelector(".list-button");
+
+      if (block) {
+        console.log(`Utente ${userLogin} sbloccato con successo`);
+        blockButton.textContent = "Blocca";
+        blockButton.classList.remove("color-green");
+        blockButton.classList.add("color-red");
+        blockButton.setAttribute("onclick", `blockUser('${userLogin}', false)`);
+      } else {
+        console.log(`Utente ${userLogin} bloccato con successo`);
+        blockButton.textContent = "Sblocca";
+        blockButton.classList.remove("color-red");
+        blockButton.classList.add("color-green");
+        blockButton.setAttribute("onclick", `blockUser('${userLogin}', true)`);
+      }
+    } else {
+      console.error("Errore durante il blocco dell'utente");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+}
+
+// Funzione per cambiare caratteri di un utente
+async function changeCharacters(userLogin) {
+  try {
+    // Esegui la richiesta API per cambiare i caratteri per l'utente con l'ID specificato
+    // Sostituire questa chiamata con la chiamata reale alla tua API
+    const response = await fetch(
+      baseUrl + `api/user/change-characters/${userLogin}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("id_token"),
+        },
+      }
+    );
+    if (response.ok) {
+      console.log(`Caratteri cambiati per l'utente ${userLogin}`);
+      // Aggiorna la lista degli utenti dopo aver cambiato i caratteri
+      await loadAndManipulateTemplate();
+    } else {
+      console.error("Errore durante il cambio caratteri dell'utente");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
 }
