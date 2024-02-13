@@ -50,3 +50,60 @@ li a:hover:not(.active) {
   justify-content: center;
   width: 100%;
 }
+
+.list-element {
+  display: flex;
+  gap: 10px;
+  padding: 2.2%;
+  border-bottom: 2px solid black;
+  text-align: center;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.el1 {
+  display: flex;
+  text-align: center;
+  align-items: center;
+}
+
+.list-header {
+  padding-left: 10px;
+  font-weight: bold;
+  font-size: 25px;
+}
+
+.list-text {
+  font-size: 16px;
+  width: fit-content;
+  margin-left: 20px;
+  height: fit-content;
+}
+
+.list-button {
+  margin-left: 20px;
+  padding: 5px;
+  border: 2px solid black;
+  font-weight: bold;
+}
+
+.color-red {
+  color: white;
+  background-color: red;
+}
+
+.color-green {
+  color: white;
+  background-color: green;
+}
+
+.color-purple {
+  color: white;
+  background-color: #4b2ca0;
+}
+
+.list-image {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
