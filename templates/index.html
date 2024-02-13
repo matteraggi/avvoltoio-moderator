@@ -6,14 +6,23 @@
     <title>Home Page</title>
   </head>
   <body>
-    <!--di fianco a nome utenti mettere pulsante per bloccare/sbloccare e per aumentare/diminuire caratteri rimanenti-->
+    <!--aumentare/diminuire caratteri rimanenti-->
     <!--filtro nome, popolarità e tipo utenti. Extra: Ordine alfabetico, popolarità-->
     <div class="w-full h-full justify-center align-middle">
       <h1 class="text-[40px] text-center pb-4">Home Page - User Mod</h1>
       <div
         class="h-full w-full border-4 border-black text-center overflow-y-scroll"
       >
-        <div id="userList"></div>
+        <div
+          id="userList"
+          class="flex flex-col justify-center align-middle"
+        ></div>
+        <button
+        id="loadMoreUsers"
+          class="mt-6 border-2 rounded-2xl bg-[#4b2ca0] text-white p-2 font-semibold"
+        >
+          Load More
+        </button>
       </div>
     </div>
   </body>
