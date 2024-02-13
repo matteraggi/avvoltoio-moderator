@@ -148,7 +148,12 @@ const loadAndManipulateTemplate = async () => {
             ? `<button class="list-button color-red" onclick="blockUser('${user?.login}', false)">Blocca</button>`
             : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">Sblocca</button>`
         }
-        <button class="list-button color-purple" onclick="">Cambia Caratteri</button>
+        <input type="number" id="numCharacters${
+          user?.login
+        }" placeholder="Num. caratteri" class="list-input"/>
+        <button class="list-button color-purple" onclick="changeCharacters('${
+          user?.login
+        }')">Cambia Caratteri</button>
         </div>
       </div>
       `;
@@ -241,7 +246,12 @@ const loadMoreUsers = async () => {
               : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">Sblocca</button>`
           }
 
-          <button class="list-button color-purple">Cambia Caratteri</button>
+        <input type="number" id="numCharacters${
+          user?.login
+        }" placeholder="Num. caratteri" class="list-input" />
+        <button class="list-button color-purple" onclick="changeCharacters('${
+          user?.login
+        }')">Cambia Caratteri</button>
           </div>
         </div>
               `;
@@ -293,20 +303,51 @@ async function blockUser(userLogin, block) {
 // Funzione per cambiare caratteri di un utente
 async function changeCharacters(userLogin) {
   try {
-    // Esegui la richiesta API per cambiare i caratteri per l'utente con l'ID specificato
-    // Sostituire questa chiamata con la chiamata reale alla tua API
-    const response = await fetch(
-      baseUrl + `api/user/change-characters/${userLogin}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + localStorage.getItem("id_token"),
-        },
-      }
+    // Recupera il valore del campo di input testuale
+    const numCharactersInput = document.getElementById(
+      `numCharacters${userLogin}`
     );
+    const numCharacters = numCharactersInput.value;
+
+    // Verifica se il valore è valido (es. non vuoto, è un numero, ecc.)
+    if (numCharacters.trim() === "") {
+      console.error("Il campo di input testuale è vuoto");
+      return;
+    }
+
+    // Converte il valore in un numero intero
+    const numCharactersInt = parseInt(numCharacters);
+
+    // Verifica se il numero è valido (es. è un numero intero positivo)
+    if (isNaN(numCharactersInt) || numCharactersInt <= 0) {
+      console.error("Il numero di caratteri specificato non è valido");
+      return;
+    }
+
+    // Continua con la tua logica per cambiare i caratteri utilizzando il valore recuperato
+    const now = new Date();
+    const thirtyOneDaysInMilliseconds = 31 * 24 * 60 * 60 * 1000;
+    const futureDate = new Date(now.getTime() + thirtyOneDaysInMilliseconds);
+    const futureTimestamp = futureDate.getTime();
+
+    const response = await fetch(baseUrl + `api/account/admin-extra`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+      body: JSON.stringify({
+        admin_extra: {
+          n_characters: numCharactersInt,
+          user_id: userLogin,
+          timestamp: futureTimestamp,
+        },
+      }),
+    });
     if (response.ok) {
-      console.log(`Caratteri cambiati per l'utente ${userLogin}`);
+      console.log(
+        `Caratteri modificati per l'utente ${userLogin}, ${numCharactersInt} caratteri fino al ${futureDate}`
+      );
       // Aggiorna la lista degli utenti dopo aver cambiato i caratteri
       await loadAndManipulateTemplate();
     } else {
