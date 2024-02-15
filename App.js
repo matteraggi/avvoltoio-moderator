@@ -1,7 +1,10 @@
 //! ROUTING E AUTHENTICATION
 const pageTitle = "Squealer Moderator Dashboard";
 const baseUrl = "http://localhost:8000/";
-const size = 5;
+const size = 10;
+var userAlphabeticalOrder = 0;
+var userPopularityOrder = 0;
+var userDateOrder = 1;
 
 const routes = {
   404: {
@@ -127,7 +130,7 @@ const loadAndManipulateTemplate = async () => {
       const userElement = document.createElement("div");
       userElement.classList.add("user");
 
-      if (user?.img[0] != null) {
+      if (user?.img_content_type != null) {
         url = `data: ${user.img_content_type}  ;base64, ${user.img}`;
       }
       userElement.innerHTML = `
@@ -153,7 +156,7 @@ const loadAndManipulateTemplate = async () => {
         }" placeholder="Num. caratteri" class="list-input"/>
         <button class="list-button color-purple" onclick="changeCharacters('${
           user?.login
-        }')">Cambia Caratteri</button>
+        }')">⬆️ / ⬇️ Caratteri</button>
         </div>
       </div>
       `;
@@ -161,16 +164,72 @@ const loadAndManipulateTemplate = async () => {
     });
     //!  SQUEAL PAGE
   } else if (squealList) {
+    const squeals = await listSqueals();
+    console.log(squeals);
+
+    // Pulisci la lista utenti prima di aggiornarla
+    squealList.innerHTML = "";
+
+    // Itera sugli utenti e crea un elemento HTML per ciascuno
+    squeals.forEach((squeal) => {
+      const squealElement = document.createElement("div");
+      squealElement.classList.add("squeal");
+
+      const squealDate = TimestampToDate(squeal?.squeal.timestamp);
+
+      squealElement.innerHTML = `
+      <div class="list-element" data-user-login="${squeal?.squeal.timestamp}">
+      <div class="el1">
+
+        <h2 class="list-header">${squeal?.userName}</h2>
+        <p class="list-text"> 
+        ${
+          squeal.squeal && squeal.squeal.body && squeal.squeal.body.length > 40
+            ? `${squeal.squeal.body.substring(0, 40)}...`
+            : squeal.squeal.body
+        }</p>
+        ${squeal && squeal.geoLoc ? `<p class="list-tag">GEOLOC</p>` : ``}
+        ${
+          squeal.squeal && squeal.squeal.img && squeal.squeal.img.length > 0
+            ? `<p class="list-tag">IMAGE</p>`
+            : ``
+        }
+        <p class="list-text"> - ${squealDate}</p>
+        </div>
+
+
+        <div class="el1">
+        ${squeal.squeal.destination.map(destination => `<p class="list-dest">${destination.destination}</p>`).join("")}
+        <p class="list-text">${squeal.positive}</p>
+        <img src="/public/like.svg" alt="SVG Image" class="list-emote">
+        <p class="list-text">${squeal.negative}</p>
+        <img src="/public/dislike.svg" alt="SVG Image" class="list-emote">
+        
+        </div>
+      </div>
+      `;
+      squealList.appendChild(squealElement);
+    });
   }
   //!  CHANNEL PAGE
   else if (channelList) {
   }
 
-  const loadMoreButton = document.getElementById("loadMoreUsers");
-  if (loadMoreButton) {
-    loadMoreButton.addEventListener("click", async function () {
+  const loadMoreButtonUsers = document.getElementById("loadMoreUsers");
+  const loadMoreButtonSqueals = document.getElementById("loadMoreSqueals");
+  const loadMoreButtonChannels = document.getElementById("loadMoreChannels");
+  if (loadMoreButtonUsers) {
+    loadMoreButtonUsers.addEventListener("click", async function () {
       try {
         await loadMoreUsers();
+      } catch (error) {
+        console.error("Errore durante il caricamento degli utenti:", error);
+      }
+    });
+  } else if (loadMoreButtonSqueals) {
+    loadMoreButtonSqueals.addEventListener("click", async function () {
+      try {
+        await loadMoreSqueals();
       } catch (error) {
         console.error("Errore durante il caricamento degli utenti:", error);
       }
@@ -214,6 +273,9 @@ const loadMoreUsers = async () => {
   console.log("loadMoreUsers");
   pageNum++; // Incrementa il numero di pagina corrente
   const users = await listUsers();
+  if (users.length == 0) {
+    document.getElementById("loadMoreUsers").style.display = "none";
+  }
 
   const userList = document.getElementById("userList");
   if (userList) {
@@ -223,7 +285,7 @@ const loadMoreUsers = async () => {
       const userElement = document.createElement("div");
       userElement.classList.add("user");
 
-      if (user?.img[0] != null) {
+      if (user?.img_content_type != null) {
         url = `data: ${user.img_content_type}  ;base64, ${user.img}`;
       }
 
@@ -251,7 +313,7 @@ const loadMoreUsers = async () => {
         }" placeholder="Num. caratteri" class="list-input" />
         <button class="list-button color-purple" onclick="changeCharacters('${
           user?.login
-        }')">Cambia Caratteri</button>
+        }')">⬆️ / ⬇️ Caratteri</button>
           </div>
         </div>
               `;
@@ -319,7 +381,7 @@ async function changeCharacters(userLogin) {
     const numCharactersInt = parseInt(numCharacters);
 
     // Verifica se il numero è valido (es. è un numero intero positivo)
-    if (isNaN(numCharactersInt) || numCharactersInt <= 0) {
+    if (isNaN(numCharactersInt)) {
       console.error("Il numero di caratteri specificato non è valido");
       return;
     }
@@ -357,3 +419,90 @@ async function changeCharacters(userLogin) {
     console.error("Errore durante la chiamata API:", error);
   }
 }
+
+//! SQUEAL SECTION
+
+const listSqueals = async () => {
+  console.log("listSqueal");
+  const url =
+    baseUrl +
+    `api/squeal-list/filtered/?page=${pageNum}&size=${size}&byTimestamp${userDateOrder}`;
+  console.log(url);
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const loadMoreSqueals = async () => {
+  console.log("loadMoreSqueals");
+  pageNum++; // Incrementa il numero di pagina corrente
+  const squeals = await listSqueals();
+  if (squeals.length == 0) {
+    document.getElementById("loadMoreSqueals").style.display = "none";
+  }
+
+  const squealList = document.getElementById("squealList");
+  if (squealList) {
+    // Itera sugli utenti e crea un elemento HTML per ciascuno
+    squeals.forEach((squeal) => {
+      const squealElement = document.createElement("div");
+      squealElement.classList.add("squeal");
+
+      squealElement.innerHTML = `
+      <div class="list-element" data-user-login="${squeal?.squeal.timestamp}">
+      <div class="el1">
+
+        <h2 class="list-header">${squeal?.userName}</h2>
+        <p class="list-text"> 
+        ${
+          squeal.squeal && squeal.squeal.body && squeal.squeal.body.length > 40
+            ? `${squeal.squeal.body.substring(0, 40)}...`
+            : squeal.squeal.body
+        }</p>
+        ${squeal && squeal.geoLoc ? `<p class="list-tag">GEOLOC</p>` : ``}
+        ${
+          squeal.squeal && squeal.squeal.img && squeal.squeal.img.length > 0
+            ? `<p class="list-tag">IMAGE</p>`
+            : ``
+        }
+        </div>
+        <div>
+        ${
+          squeal.activated
+            ? `<button class="list-button color-red" onclick="blocksqueal('${squeal?.login}', false)">Blocca</button>`
+            : `<button class="list-button color-green" onclick="blocksqueal('${squeal?.login}', true)">Sblocca</button>`
+        }
+        <input type="number" id="numCharacters${
+          squeal?.login
+        }" placeholder="Num. caratteri" class="list-input"/>
+        <button class="list-button color-purple" onclick="changeCharacters('${
+          squeal?.login
+        }')">⬆️ / ⬇️ Caratteri</button>
+        </div>
+      </div>
+              `;
+      squealList.appendChild(squealElement); // Aggiungi il nuovo elemento utente alla lista utenti
+    });
+  }
+};
+
+const TimestampToDate = (timestamp) => {
+  var date = new Date(timestamp);
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // Gennaio è 0, quindi aggiungiamo 1
+  const year = date.getFullYear();
+
+  const formattedDate = `${day}/${month}/${year}`;
+  return formattedDate;
+};

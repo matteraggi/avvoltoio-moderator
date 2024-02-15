@@ -6,17 +6,27 @@
     <title>Squeal Page</title>
   </head>
   <body>
-    <!--elencare i post e:-->
-    <!--1) filtrare per mittente, destinatari e data. Extra: ordinare per data-->
+    <!--1) filtrare per mittente, destinatari e data-->
+
     <!--2) cambiare destinatari-->
     <!--3) cambiare numero reazioni pos/neg-->
+
     <!--Extra: eliminare squeal-->
     <div class="w-full h-full justify-center align-middle">
       <h1 class="text-[40px] text-center pb-4">Squeal Page - Mod</h1>
       <div
         class="h-full w-full border-4 border-black text-center overflow-y-scroll"
       >
-        <div id="squealList"></div>
+        <div
+          id="squealList"
+          class="flex flex-col justify-center align-middle"
+        ></div>
+        <button
+          id="loadMoreSqueals"
+          class="mt-6 border-2 rounded-2xl bg-[#4b2ca0] text-white p-2 font-semibold"
+        >
+          Load More
+        </button>
       </div>
     </div>
   </body>
