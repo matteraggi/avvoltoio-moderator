@@ -85,6 +85,7 @@ li a:hover:not(.active) {
   padding: 5px;
   border: 2px solid black;
   font-weight: bold;
+  width: fit-content;
 }
 
 .color-red {
@@ -114,6 +115,12 @@ li a:hover:not(.active) {
   padding-left: 5px;
 }
 
+.list-input-dest {
+  border: 1px solid black;
+  padding-left: 5px;
+  width: 60%;
+}
+
 .list-tag {
   font-size: 16px;
   width: fit-content;
@@ -135,8 +142,64 @@ li a:hover:not(.active) {
   margin-left: 5px;
 }
 
-.list-dest{
+.list-dest {
   color: gray;
-  margin-left: 20px;
   font-style: italic;
+}
+
+.list-destinations {
+  border: 2px solid #4b2ca0;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  display: flex;
+  gap: 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.list-destinations:hover {
+  background-color: #4b2ca0;
+}
+
+.list-destinations:hover p {
+  color: white;
+}
+
+.modal {
+  display: none; /* Il modal è nascosto di default */
+  position: fixed; /* Posizione fissa sulla pagina */
+  z-index: 1; /* Imposta lo z-index in modo che il modal sia visibile sopra il resto del contenuto */
+  left: 0;
+  top: 0;
+  width: 100%; /* Copre l'intera larghezza della finestra del browser */
+  height: 100%; /* Copre l'intera altezza della finestra del browser */
+  overflow: auto; /* Aggiunge la barra di scorrimento se il contenuto è troppo grande */
+  background-color: rgba(0, 0, 0, 0.5); /* Sfondo semitrasparente */
+}
+
+/* Stile del contenuto del modal */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* Centra verticalmente e orizzontalmente il modal */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 45%; /* Larghezza del contenuto del modal */
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: middle;
+}
+
+.edit-dest-elem {
+  margin-right: 20px;
+  font-size: 26px;
+  color: gray;
+}
+
+.dest-names {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-bottom: 30px;
 }

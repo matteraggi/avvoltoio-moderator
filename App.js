@@ -1,7 +1,7 @@
 //! ROUTING E AUTHENTICATION
 const pageTitle = "Squealer Moderator Dashboard";
 const baseUrl = "http://localhost:8000/";
-const size = 10;
+const size = 6;
 var userAlphabeticalOrder = 0;
 var userPopularityOrder = 0;
 var userDateOrder = 1;
@@ -178,7 +178,7 @@ const loadAndManipulateTemplate = async () => {
       const squealDate = TimestampToDate(squeal?.squeal.timestamp);
 
       squealElement.innerHTML = `
-      <div class="list-element" data-user-login="${squeal?.squeal.timestamp}">
+      <div class="list-element">
       <div class="el1">
 
         <h2 class="list-header">${squeal?.userName}</h2>
@@ -197,18 +197,31 @@ const loadAndManipulateTemplate = async () => {
         <p class="list-text"> - ${squealDate}</p>
         </div>
 
-
         <div class="el1">
-        ${squeal.squeal.destination.map(destination => `<p class="list-dest">${destination.destination}</p>`).join("")}
+        <div class="list-destinations" id="${squeal?.squeal._id}">
+        ${squeal.squeal.destination
+          .map(
+            (destination) =>
+              `<p class="list-dest">${destination.destination}</p>`
+          )
+          .join("")}
+          </div>
         <p class="list-text">${squeal.positive}</p>
-        <img src="/public/like.svg" alt="SVG Image" class="list-emote">
+        <img src="/like.svg" alt="SVG Image" class="list-emote">
         <p class="list-text">${squeal.negative}</p>
-        <img src="/public/dislike.svg" alt="SVG Image" class="list-emote">
+        <img src="/dislike.svg" alt="SVG Image" class="list-emote">
         
         </div>
       </div>
       `;
       squealList.appendChild(squealElement);
+      const destinationElement = document.getElementById(squeal?.squeal._id);
+
+      // Aggiungi un gestore di eventi per l'evento click
+      destinationElement.addEventListener("click", function () {
+        // Chiama la funzione openModal passando il valore appropriato
+        openModal(squeal.squeal);
+      });
     });
   }
   //!  CHANNEL PAGE
@@ -459,6 +472,8 @@ const loadMoreSqueals = async () => {
       const squealElement = document.createElement("div");
       squealElement.classList.add("squeal");
 
+      const squealDate = TimestampToDate(squeal?.squeal.timestamp);
+
       squealElement.innerHTML = `
       <div class="list-element" data-user-login="${squeal?.squeal.timestamp}">
       <div class="el1">
@@ -476,19 +491,22 @@ const loadMoreSqueals = async () => {
             ? `<p class="list-tag">IMAGE</p>`
             : ``
         }
+        <p class="list-text"> - ${squealDate}</p>
         </div>
-        <div>
-        ${
-          squeal.activated
-            ? `<button class="list-button color-red" onclick="blocksqueal('${squeal?.login}', false)">Blocca</button>`
-            : `<button class="list-button color-green" onclick="blocksqueal('${squeal?.login}', true)">Sblocca</button>`
-        }
-        <input type="number" id="numCharacters${
-          squeal?.login
-        }" placeholder="Num. caratteri" class="list-input"/>
-        <button class="list-button color-purple" onclick="changeCharacters('${
-          squeal?.login
-        }')">⬆️ / ⬇️ Caratteri</button>
+
+
+        <div class="el1">
+        ${squeal.squeal.destination
+          .map(
+            (destination) =>
+              `<p class="list-dest">${destination.destination}</p>`
+          )
+          .join("")}
+        <p class="list-text">${squeal.positive}</p>
+        <img src="/like.svg" alt="SVG Image" class="list-emote">
+        <p class="list-text">${squeal.negative}</p>
+        <img src="/dislike.svg" alt="SVG Image" class="list-emote">
+        
         </div>
       </div>
               `;
@@ -505,4 +523,112 @@ const TimestampToDate = (timestamp) => {
 
   const formattedDate = `${day}/${month}/${year}`;
   return formattedDate;
+};
+
+// Funzione per aprire un modal
+const openModal = (dest) => {
+  console.log(dest);
+  // Seleziona l'elemento del modal
+  const modalBox = document.getElementById("modal");
+  const modal = document.getElementById("modal-content");
+  if (modal) {
+    modal.innerHTML = "";
+    if (dest.destination.length > 1) {
+      modal.innerHTML = `
+      <div class="dest-names">
+  ${dest.destination
+    .map(
+      (destination) =>
+        `<p class="edit-dest-elem">${destination.destination}</p>`
+    )
+    .join("")}
+    </div>
+    <div class="dest-names">
+    <input type="text" id="newDestination" placeholder="Aggiungi una nuova destinazione" class="list-input-dest"/>
+    <button class="list-button color-purple" id="${
+      dest.timestamp
+    }">Aggiungi Destinazione</button></div>
+  `;
+    } else {
+      modal.innerHTML = `
+      <div class="dest-names">
+    <p class="edit-dest-elem">${destination.destination}</p>
+    </div>
+    <div class="dest-names">
+    <input type="text" id="newDestination" placeholder="Aggiungi una nuova destinazione" class="list-input-dest"/>
+    <button class="list-button color-purple" id="${dest.timestamp}">Aggiungi Destinazione</button></div>
+    `;
+    }
+    const addDestinationButton = document.getElementById(dest.timestamp);
+    addDestinationButton.addEventListener("click", async function () {
+      try {
+        const newDestination = document.getElementById("newDestination").value;
+        if (newDestination.trim() === "") {
+          console.error("Il campo di input testuale è vuoto");
+          return;
+        }
+        dest.destination.push({ destination: newDestination });
+        await addLoc(dest);
+      } catch (error) {
+        console.error("Errore durante il caricamento degli utenti:", error);
+      }
+    });
+  }
+
+  // Mostra il modal
+  modalBox.style.display = "block";
+
+  // Aggiungi un gestore di eventi per chiudere il modal quando si clicca al di fuori del contenuto del modal
+  window.onclick = (event) => {
+    if (event.target === modalBox) {
+      closeModal();
+    }
+  };
+};
+
+// Funzione per chiudere il modal
+const closeModal = () => {
+  // Seleziona l'elemento del modal
+  const modal = document.getElementById("modal");
+
+  // Nascondi il modal
+  modal.style.display = "none";
+
+  // Rimuovi il gestore di eventi per il click al di fuori del modal
+  window.onclick = null;
+};
+
+const addLoc = async (squeal) => {
+  console.log(squeal);
+  try {
+    const response = await fetch(baseUrl + `api/squeals/edit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+      body: JSON.stringify({
+        squeal: {
+          _id: squeal._id,
+          body: squeal.body,
+          destination: squeal.destination,
+          img: squeal.img,
+          img_content_type: squeal.img_content_type,
+          img_name: squeal.img_name,
+          video_content_type: squeal.video_content_type,
+          video_name: squeal.video_name,
+          n_characters: squeal.n_characters,
+          squeal_id_response: squeal.squeal_id_response,
+        },
+        geoLoc: null,
+      }),
+    });
+    if (response.ok) {
+      console.log(`Destinazione aggiunta con successo`);
+    } else {
+      console.error("Errore durante l'aggiunta della destinazione");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
 };
