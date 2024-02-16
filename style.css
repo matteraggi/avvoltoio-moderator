@@ -184,7 +184,7 @@ li a:hover:not(.active) {
   margin: 15% auto; /* Centra verticalmente e orizzontalmente il modal */
   padding: 20px;
   border: 1px solid #888;
-  width: 45%; /* Larghezza del contenuto del modal */
+  width: 50%; /* Larghezza del contenuto del modal */
   min-height: 180px;
   display: flex;
   flex-direction: column;
@@ -192,14 +192,33 @@ li a:hover:not(.active) {
 }
 
 .edit-dest-elem {
-  margin-right: 20px;
-  font-size: 26px;
+  font-size: 22px;
   color: gray;
+  margin-right: 10px;
+}
+
+.dest-list {
+  display: flex;
 }
 
 .dest-names {
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 30px;
   margin-bottom: 30px;
+}
+
+.x-button {
+  padding-left: 15px;
+  padding-right: 15px;
+  border-radius: 20px;
+}
+
+.list-reaction-input {
+  width: 50px;
+  margin-left: 20px;
+}
+
+.list-reaction-button {
+  margin-left: 10px;
 }
