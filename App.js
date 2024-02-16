@@ -206,11 +206,24 @@ const loadAndManipulateTemplate = async () => {
           )
           .join("")}
           </div>
-        <p class="list-text">${squeal.positive}</p>
+          <input type="number" id="pos-${
+            squeal?.squeal._id
+          }" name="pos" class="list-reaction-input" placeholder="${
+        squeal.positive
+      }"/>
+          
         <img src="/like.svg" alt="SVG Image" class="list-emote">
-        <p class="list-text">${squeal.negative}</p>
+        <input type="number" id="neg-${
+          squeal?.squeal._id
+        }" name="neg" class="list-reaction-input" placeholder="${
+        squeal.negative
+      }"/>
         <img src="/dislike.svg" alt="SVG Image" class="list-emote">
-        
+        <input type="submit" value="🔄" class="list-reaction-button" onclick="changeReaction('${
+          squeal.squeal._id
+        }', document.getElementById('pos-${
+        squeal?.squeal._id
+      }').value, document.getElementById('neg-${squeal?.squeal._id}').value)"/>
         </div>
       </div>
       `;
@@ -475,7 +488,7 @@ const loadMoreSqueals = async () => {
       const squealDate = TimestampToDate(squeal?.squeal.timestamp);
 
       squealElement.innerHTML = `
-      <div class="list-element" data-user-login="${squeal?.squeal.timestamp}">
+      <div class="list-element">
       <div class="el1">
 
         <h2 class="list-header">${squeal?.userName}</h2>
@@ -494,23 +507,44 @@ const loadMoreSqueals = async () => {
         <p class="list-text"> - ${squealDate}</p>
         </div>
 
-
         <div class="el1">
+        <div class="list-destinations" id="${squeal?.squeal._id}">
         ${squeal.squeal.destination
           .map(
             (destination) =>
               `<p class="list-dest">${destination.destination}</p>`
           )
           .join("")}
-        <p class="list-text">${squeal.positive}</p>
-        <img src="/like.svg" alt="SVG Image" class="list-emote">
-        <p class="list-text">${squeal.negative}</p>
-        <img src="/dislike.svg" alt="SVG Image" class="list-emote">
-        
+          </div>
+          
+          <input type="number" id="pos-${
+            squeal?.squeal._id
+          }" name="pos" class="list-reaction-input" placeholder="${
+        squeal.positive
+      }"/>
+          <img src="/like.svg" alt="SVG Image" class="list-emote">
+          <input type="number" id="neg-${
+            squeal?.squeal._id
+          }" name="neg" class="list-reaction-input" placeholder="${
+        squeal.negative
+      }"/>
+          <img src="/dislike.svg" alt="SVG Image" class="list-emote">
+          <input type="submit" value="🔄" class="list-reaction-button" onclick="changeReaction('${
+            squeal.squeal._id
+          }', document.getElementById('pos-${
+        squeal?.squeal._id
+      }').value, document.getElementById('neg-${squeal?.squeal._id}').value)"/>
+          </div>
         </div>
-      </div>
               `;
       squealList.appendChild(squealElement); // Aggiungi il nuovo elemento utente alla lista utenti
+      const destinationElement = document.getElementById(squeal?.squeal._id);
+
+      // Aggiungi un gestore di eventi per l'evento click
+      destinationElement.addEventListener("click", function () {
+        // Chiama la funzione openModal passando il valore appropriato
+        openModal(squeal.squeal);
+      });
     });
   }
 };
@@ -533,13 +567,17 @@ const openModal = (dest) => {
   const modal = document.getElementById("modal-content");
   if (modal) {
     modal.innerHTML = "";
-    if (dest.destination.length > 1) {
-      modal.innerHTML = `
+    modal.innerHTML = `
       <div class="dest-names">
   ${dest.destination
     .map(
       (destination) =>
-        `<p class="edit-dest-elem">${destination.destination}</p>`
+        `
+        <div class="dest-list">
+        <p class="edit-dest-elem">${destination.destination}</p>
+        <button class="x-button color-red" onclick="removeDestination('${dest._id}', '${destination.destination}')">X</button>
+        </div>
+        `
     )
     .join("")}
     </div>
@@ -549,16 +587,6 @@ const openModal = (dest) => {
       dest.timestamp
     }">Aggiungi Destinazione</button></div>
   `;
-    } else {
-      modal.innerHTML = `
-      <div class="dest-names">
-    <p class="edit-dest-elem">${destination.destination}</p>
-    </div>
-    <div class="dest-names">
-    <input type="text" id="newDestination" placeholder="Aggiungi una nuova destinazione" class="list-input-dest"/>
-    <button class="list-button color-purple" id="${dest.timestamp}">Aggiungi Destinazione</button></div>
-    `;
-    }
     const addDestinationButton = document.getElementById(dest.timestamp);
     addDestinationButton.addEventListener("click", async function () {
       try {
@@ -626,9 +654,72 @@ const addLoc = async (squeal) => {
     if (response.ok) {
       console.log(`Destinazione aggiunta con successo`);
     } else {
+      alert("Destinazione non esistente");
       console.error("Errore durante l'aggiunta della destinazione");
     }
   } catch (error) {
     console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const removeDestination = async (squealId, dest) => {
+  try {
+    console.log(dest);
+    const response = await fetch(
+      baseUrl + `api/squeals/changedest/?squealId=${squealId}&dest=${dest}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("id_token"),
+        },
+      }
+    );
+    if (response.ok) {
+      console.log(`Destinazione rimossa con successo`);
+    } else {
+      alert("Destinazione non esistente");
+      console.error("Errore durante l'aggiunta della destinazione");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const changeReaction = async (squealId, pos, neg) => {
+  // Costruisci il corpo della richiesta
+  console.log(squealId, pos, neg);
+  try {
+    // Invia la richiesta POST all'API REST
+    const response = await fetch(baseUrl + `api/squeals/changereaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+      body: JSON.stringify({
+        requestBody: {
+          squeal_id: squealId,
+          positive: pos,
+          negative: neg,
+        },
+      }),
+    });
+    // Verifica se la richiesta è stata eseguita con successo
+    if (response.ok) {
+      // Esegui ulteriori operazioni se necessario
+      alert("La reazione è stata cambiata con successo!");
+      console.log("La reazione è stata cambiata con successo!");
+    } else {
+      // Gestisci eventuali errori nella risposta
+      alert("Errore durante il cambio della reazione:", response.status);
+      console.error(
+        "Errore durante il cambio della reazione:",
+        response.status
+      );
+    }
+  } catch (error) {
+    // Gestisci eventuali errori durante l'invio della richiesta
+    console.error("Errore durante l'invio della richiesta:", error);
   }
 };
