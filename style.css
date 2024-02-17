@@ -88,6 +88,13 @@ li a:hover:not(.active) {
   width: fit-content;
 }
 
+.list-button-borderless {
+  margin-left: 20px;
+  padding: 5px;
+  font-weight: bold;
+  width: fit-content;
+}
+
 .color-red {
   color: white;
   background-color: red;
@@ -221,4 +228,27 @@ li a:hover:not(.active) {
 
 .list-reaction-button {
   margin-left: 10px;
+}
+
+.display-none {
+  display: none;
+}
+
+.channel-dest {
+  margin-left: 50px;
+}
+
+.color-blue{
+  color: blue;
+}
+
+.channel-description{
+  color: gray;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.channel-desc-box{
+  display: flex;
+  gap: 20px;
 }

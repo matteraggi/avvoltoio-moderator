@@ -239,6 +239,55 @@ const loadAndManipulateTemplate = async () => {
   }
   //!  CHANNEL PAGE
   else if (channelList) {
+    const channels = await listChannels();
+    console.log(channels);
+
+    // Pulisci la lista utenti prima di aggiornarla
+    channelList.innerHTML = "";
+
+    // Itera sugli utenti e crea un elemento HTML per ciascuno
+    channels.forEach((channel) => {
+      const channelElement = document.createElement("div");
+      channelElement.classList.add("channel");
+
+      channelElement.innerHTML = `
+      <div class="list-element" data-channel="${channel?.channel._id}">
+      <div class="el1">
+
+        <h2 class="list-header">${channel?.channel.name}</h2>
+        ${
+          channel?.channel.description
+            ? `<p class="channel-dest">${channel?.channel.description.substring(
+                0,
+                100
+              )}</p>
+              <button class="list-button-borderless color-blue" onclick="openChannelDescModal('${
+                channel?.channel._id
+              }', '${channel?.channel.description}')">edit</button>`
+            : ``
+        }
+      </div>
+      <div class="el1">
+      <button class="list-button color-green" onclick="openAddSquealModal('${
+        channel?.channel.name
+      }', '${channel?.channel.type}', '${
+        channel?.channel._id
+      }')">Squealla</button>
+        <button class="list-button color-red" onclick="deleteChannel('${
+          channel?.channel._id
+        }')">Elimina Canale</button>
+          
+      </div>
+      </div>
+      `;
+      channelList.appendChild(channelElement);
+    });
+    const addChannelButton = document.getElementById("addChannel");
+    // Aggiungi un gestore di eventi per l'evento click
+    addChannelButton.addEventListener("click", function () {
+      // Chiama la funzione openModal passando il valore appropriato
+      openAddChannelModal();
+    });
   }
 
   const loadMoreButtonUsers = document.getElementById("loadMoreUsers");
@@ -256,6 +305,14 @@ const loadAndManipulateTemplate = async () => {
     loadMoreButtonSqueals.addEventListener("click", async function () {
       try {
         await loadMoreSqueals();
+      } catch (error) {
+        console.error("Errore durante il caricamento degli utenti:", error);
+      }
+    });
+  } else if (loadMoreButtonChannels) {
+    loadMoreButtonChannels.addEventListener("click", async function () {
+      try {
+        await loadMoreChannels();
       } catch (error) {
         console.error("Errore durante il caricamento degli utenti:", error);
       }
@@ -516,7 +573,7 @@ const loadMoreSqueals = async () => {
           )
           .join("")}
           </div>
-          
+
           <input type="number" id="pos-${
             squeal?.squeal._id
           }" name="pos" class="list-reaction-input" placeholder="${
@@ -721,5 +778,360 @@ const changeReaction = async (squealId, pos, neg) => {
   } catch (error) {
     // Gestisci eventuali errori durante l'invio della richiesta
     console.error("Errore durante l'invio della richiesta:", error);
+  }
+};
+
+//! CHANNEL SECTION
+
+const listChannels = async () => {
+  const url = baseUrl + `api/channels-mod/?page=${pageNum}&size=${size}`;
+  console.log(url);
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const loadMoreChannels = async () => {
+  console.log("loadMoreChannels");
+  pageNum++; // Incrementa il numero di pagina corrente
+  const channels = await listChannels();
+  if (channels.length == 0) {
+    document.getElementById("loadMoreChannels").style.display = "none";
+  }
+
+  const channelList = document.getElementById("channelList");
+  if (channelList) {
+    // Itera sugli utenti e crea un elemento HTML per ciascuno
+    channels.forEach((channel) => {
+      const channelElement = document.createElement("div");
+      channelElement.classList.add("channel");
+
+      channelElement.innerHTML = `
+      <div class="list-element" data-channel="${channel?.channel._id}">
+      <div class="el1">
+
+        <h2 class="list-header">${channel?.channel.name}</h2>
+        ${
+          channel?.channel.description
+            ? `<p class="channel-dest">${channel?.channel.description.substring(
+                0,
+                100
+              )}</p>
+              <button class="list-button-borderless color-blue" onclick="openChannelDescModal('${
+                channel?.channel._id
+              }', '${channel?.channel.description}')">edit</button>`
+            : ``
+        }
+      </div>
+      <div class="el1">
+      <button class="list-button color-green" onclick="openAddSquealModal('${
+        channel?.channel.name
+      }', '${channel?.channel.type}', '${
+        channel?.channel._id
+      }')">Squealla</button>
+        <button class="list-button color-red" onclick="deleteChannel('${
+          channel?.channel._id
+        }')">Elimina Canale</button>
+          
+      </div>
+      </div>
+      `;
+      channelList.appendChild(channelElement); // Aggiungi il nuovo elemento utente alla lista utenti
+    });
+  }
+};
+
+const deleteChannel = async (channelId) => {
+  try {
+    const response = await fetch(baseUrl + `api/channels/${channelId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+    });
+    if (response.ok) {
+      const channelRemoved = document.querySelector(
+        `[data-channel="${channelId}"]`
+      );
+
+      channelRemoved.classList.add("display-none");
+      console.log(`Canale eliminato con successo`);
+    } else {
+      console.error("Errore durante l'eliminazione del canale");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const openAddChannelModal = () => {
+  const modalChannelBox = document.getElementById("modalAddChannel");
+  // Mostra il modal
+  modalChannelBox.style.display = "block";
+
+  const submitAddChannelButton = document.getElementById("submitAddChannel");
+  submitAddChannelButton.removeEventListener("click", handleSubmitAddChannel);
+
+  submitAddChannelButton.addEventListener("click", handleSubmitAddChannel);
+
+  // Aggiungi un gestore di eventi per chiudere il modal quando si clicca al di fuori del contenuto del modal
+  window.onclick = (event) => {
+    if (event.target === modalChannelBox) {
+      closeAddChannelModal();
+    }
+  };
+};
+
+const handleSubmitAddChannel = async () => {
+  {
+    try {
+      const channelName = document.getElementById("channelName").value;
+      const channelDesc = document.getElementById("channelDescription").value;
+      await addModChannel(channelName, channelDesc);
+    } catch (error) {
+      console.error("Errore:", error);
+    }
+  }
+};
+
+const addModChannel = async (channelname, channelDesc) => {
+  try {
+    const response = await fetch(baseUrl + `api/channels`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+      body: JSON.stringify({
+        channel: {
+          name: channelname,
+          description: channelDesc,
+          type: "MOD",
+        },
+      }),
+    });
+    if (response.ok) {
+      console.log(`Canale aggiunto con successo`);
+    } else {
+      alert("Il nome del canale deve essere in MAIUSCOLO");
+      console.error("Errore durante l'aggiunta del canale");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const closeAddChannelModal = () => {
+  // Seleziona l'elemento del modal
+  const channelModal = document.getElementById("modalAddChannel");
+
+  // Nascondi il modal
+  channelModal.style.display = "none";
+
+  // Rimuovi il gestore di eventi per il click al di fuori del modal
+  window.onclick = null;
+};
+
+const openAddSquealModal = (channelName, channelType, channelId) => {
+  channelName = channelName.slice(1);
+  console.log(channelName, channelType, channelId);
+  // Seleziona l'elemento del modal
+  const modalSquealBox = document.getElementById("modalAddSqueal");
+  // Mostra il modal
+  modalSquealBox.style.display = "block";
+
+  const submitAddSquealButton = document.getElementById("submitAddSqueal");
+
+  submitAddSquealButton.addEventListener("click", async function () {
+    try {
+      var image = "";
+      const squealBody = document.getElementById("squealBody").value;
+      if (document.getElementById("squealImage")) {
+        image = document.getElementById("squealImage");
+      }
+      if (squealBody.trim() === "") {
+        console.error("Il campo di input testuale è vuoto");
+        return;
+      }
+      const dest = {
+        destination: channelName,
+        destination_type: channelType,
+        destination_id: channelId,
+      };
+      await addSqueal(squealBody, image, dest);
+    } catch (error) {
+      console.error("Errore durante il caricamento degli utenti:", error);
+    }
+  });
+
+  // Aggiungi un gestore di eventi per chiudere il modal quando si clicca al di fuori del contenuto del modal
+  window.onclick = (event) => {
+    if (event.target === modalSquealBox) {
+      closeAddSquealModal();
+    }
+  };
+};
+
+const closeAddSquealModal = () => {
+  // Seleziona l'elemento del modal
+  const squealModal = document.getElementById("modalAddSqueal");
+
+  // Nascondi il modal
+  squealModal.style.display = "none";
+
+  // Rimuovi il gestore di eventi per il click al di fuori del modal
+  window.onclick = null;
+};
+
+const convertImage = async (fileInput) => {
+  const imageFile = fileInput.files[0]; // Assume che venga caricato solo un file
+  if (imageFile == null) {
+    return;
+  }
+  if (!imageFile.type.startsWith("image/")) {
+    alert("Il file selezionato non è un'immagine");
+    return;
+  } else {
+    return await fileToBase64(imageFile)
+      .then((base64String) => {
+        base64String = base64String.substring(
+          base64String.indexOf("base64,") + "base64,".length
+        );
+        const image = {
+          img: base64String,
+          img_content_type: imageFile.type,
+        };
+        console.log(image);
+        return image;
+      })
+      .catch((error) => {
+        console.error("Errore durante la conversione del file:", error);
+      });
+  }
+};
+
+const fileToBase64 = async (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+
+    reader.readAsDataURL(file);
+  });
+};
+
+const addSqueal = async (squealBody, image, channel) => {
+  const dest = [];
+  dest.push(channel);
+
+  imageConverted = await convertImage(image);
+  console.log(imageConverted);
+  try {
+    const response = await fetch(baseUrl + `api/squeals`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+      body: JSON.stringify({
+        squeal: {
+          body: squealBody,
+          destination: dest,
+          img: imageConverted?.img,
+          img_content_type: imageConverted?.img_content_type,
+        },
+        geoLoc: null,
+      }),
+    });
+    if (response.ok) {
+      console.log(`Squeal aggiunto con successo`);
+    } else {
+      console.error("Errore durante l'aggiunta del squeal");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const openChannelDescModal = (channelId, channelDesc) => {
+  const modalChannelDescBox = document.getElementById("modalChannelDesc");
+  const modalChannelDesc = document.getElementById("modalChannelDesc-content");
+  if (modalChannelDesc) {
+    modalChannelDesc.innerHTML = "";
+    modalChannelDesc.innerHTML = `
+      <p class="channel-description">${channelDesc}</p>
+      <div class="channel-desc-box">
+      <input type="text" id="newChannelDesc" placeholder="${channelDesc}" class="list-input-dest"/>
+      <button onclick="changeDesc('${channelId}')" class="list-button">Cambia</button>
+      </div>
+  `;
+
+    // Mostra il modal
+    modalChannelDescBox.style.display = "block";
+
+    // Aggiungi un gestore di eventi per chiudere il modal quando si clicca al di fuori del contenuto del modal
+    window.onclick = (event) => {
+      if (event.target === modalChannelDescBox) {
+        closeChannelDescModal();
+      }
+    };
+  }
+};
+
+const closeChannelDescModal = () => {
+  // Seleziona l'elemento del modal
+  const channelDescModal = document.getElementById("modalChannelDesc");
+
+  // Nascondi il modal
+  channelDescModal.style.display = "none";
+
+  // Rimuovi il gestore di eventi per il click al di fuori del modal
+  window.onclick = null;
+};
+
+const changeDesc = async (channelId) => {
+  console.log(channelId);
+  const channelDesc = document.getElementById("newChannelDesc").value;
+
+  try {
+    const response = await fetch(baseUrl + `api/channels/edit-description`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+      body: JSON.stringify({
+        channel: {
+          _id: channelId,
+          description: channelDesc,
+        },
+      }),
+    });
+    if (response.ok) {
+      alert("Descrizione cambiata con successo");
+      console.log(`Nuova Descrizione`);
+    } else {
+      console.error("Errore durante l'aggiornamento descrizione");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
   }
 };

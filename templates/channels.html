@@ -6,20 +6,105 @@
     <title>Channels Page</title>
   </head>
   <body>
-    <!--Elencare i canali ufficiali Squealer-->
-    <!--Eliminare o aggiungere canali ufficiali Squealer e [cambiare la descrizione]-->
-
-    <!--Extra: elencare tutti i canali (anche quelli utenti)-->
-    <!--filtrare per proprietari, numero di post e popolarità-->
-    <!--cambiare a mano i proprietari ed il nome e bloccare/sbloccare-->
-    <!--aggiungere o rimuovere squeal a canale-->
+    <!--rimuovere squeal a canale: si può già fare nella sezione squeal ma aggiungere anche qui in caso-->
 
     <div class="w-full h-full justify-center align-middle">
       <h1 class="text-[40px] text-center pb-4">Channels Page - Mod</h1>
       <div
         class="h-full w-full border-4 border-black text-center overflow-y-scroll"
       >
-        <div id="channelList"></div>
+        <div
+          id="channelList"
+          class="flex flex-col justify-center align-middle"
+        ></div>
+        <button
+          id="loadMoreChannels"
+          class="mt-6 border-2 rounded-2xl bg-[#4b2ca0] text-white p-2 font-semibold"
+        >
+          Load More
+        </button>
+      </div>
+      <div class="flex justify-end">
+        <button
+          id="addChannel"
+          class="mt-5 w-12 h-12 border-2 rounded-full bg-green-600 text-white p-2 font-semibold"
+        >
+          +
+        </button>
+      </div>
+      <div id="modalAddChannel" class="modal">
+        <div class="modal-content">
+          <div class="flex flex-col gap-5">
+            <label for="channelName">Channel Name:</label>
+            <input
+              type="text"
+              id="channelName"
+              name="channelName"
+              placeholder="CHANNEL"
+              required
+              class="border-2 rounded-2xl pl-3"
+            />
+            <label for="channelDescription">Channel Description:</label>
+            <input
+              type="text"
+              id="channelDescription"
+              name="channelDescription"
+              required
+              class="border-2 rounded-2xl pl-3"
+            />
+            <button
+              id="submitAddChannel"
+              class="border-2 rounded-2xl bg-[#4b2ca0] text-white p-2 font-semibold"
+            >
+              Add Channel
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="modalAddSqueal" class="modal">
+        <div class="modal-content">
+          <div class="flex flex-col gap-5">
+            <label for="squealBody">Posta un nuovo Squeal!</label>
+            <textarea
+              type="text"
+              id="squealBody"
+              name="squealBody"
+              placeholder="BlaBla"
+              required
+              class="border-2 rounded-2xl pl-3"
+            ></textarea>
+            <label
+              for="squealImage"
+              id="squealImageLabel"
+              class="flex w-fit cursor-pointer"
+            >
+              <p class="mr-3">Carica immagine:</p>
+              <img
+                src="/image.svg"
+                alt="Carica Immagine"
+                width="30"
+                height="30"
+              />
+            </label>
+            <input
+              type="file"
+              id="squealImage"
+              name="squealImage"
+              accept="image/*"
+              style="display: none"
+            />
+
+            <button
+              id="submitAddSqueal"
+              class="border-2 rounded-2xl bg-[#4b2ca0] text-white p-2 font-semibold"
+            >
+              Post Squeal
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="modalChannelDesc" class="modal">
+        <div id="modalChannelDesc-content" class="modal-content"></div>
       </div>
     </div>
   </body>
