@@ -9,13 +9,26 @@
     <script src="./App.js" defer></script>
   </head>
   <body>
-    <ul>
-      <li class="cursor-pointer"><a href="/#">Home</a></li>
-      <li class="cursor-pointer"><a href="#squeal">Squeal</a></li>
-      <li class="cursor-pointer"><a href="#channels">Channels</a></li>
+    <ul class="w-full flex justify-center">
+      <div class="w-[85%] flex justify-between align-middle">
+        <p class="text-white font-bold text-[24px] self-center py-4 w-[250px]">
+          Admin Dashboard
+        </p>
+        <div class="self-center">
+          <li class="cursor-pointer"><a href="/#">User</a></li>
+          <li class="cursor-pointer"><a href="#squeal">Squeal</a></li>
+          <li class="cursor-pointer"><a href="#channels">Channels</a></li>
+        </div>
+        <div class="py-4 w-[250px] flex justify-end">
+          <img src="/favicon.ico" alt="logo" width="50" />
+        </div>
+      </div>
     </ul>
     <div class="w-full flex justify-center pt-20 h-screen bg-zinc-100">
-      <div id="content" class="flex w-[85%] h-[80%] justify-center align-center"></div>
+      <div
+        id="content"
+        class="flex w-[85%] h-[80%] justify-center align-center"
+      ></div>
     </div>
   </body>
 </html>

@@ -4,7 +4,10 @@ const baseUrl = "http://localhost:8000/";
 const size = 6;
 var alphabetic = 0;
 var popularity = 0;
-var type = 0;
+var type = "";
+var alphabeticSender = 0;
+var channelTypeName = "";
+var date = 0;
 
 const routes = {
   404: {
@@ -151,6 +154,51 @@ const handleTypeOrderMod = () => {
   loadAndManipulateTemplate();
 };
 
+const handleSenderNameOrder = () => {
+  document.getElementById("loadMoreSqueals").style.display = "";
+  document.getElementById("loadMoreSquealsEnd").style.display = "none";
+  alphabeticSender = 1;
+  channelTypeName = "";
+  date = 0;
+  loadAndManipulateTemplate();
+};
+
+const handlePrivateGroupOrder = () => {
+  document.getElementById("loadMoreSqueals").style.display = "";
+  document.getElementById("loadMoreSquealsEnd").style.display = "none";
+  channelTypeName = "PRIVATEGROUP";
+  alphabeticSender = 0;
+  date = 0;
+  loadAndManipulateTemplate();
+};
+
+const handlePublicGroupOrder = () => {
+  document.getElementById("loadMoreSqueals").style.display = "";
+  document.getElementById("loadMoreSquealsEnd").style.display = "none";
+  channelTypeName = "PUBLICGROUP";
+  alphabeticSender = 0;
+  date = 0;
+  loadAndManipulateTemplate();
+};
+
+const handleModGroupOrder = () => {
+  document.getElementById("loadMoreSqueals").style.display = "";
+  document.getElementById("loadMoreSquealsEnd").style.display = "none";
+  channelTypeName = "MOD";
+  alphabeticSender = 0;
+  date = 0;
+  loadAndManipulateTemplate();
+};
+
+const handleDateOrder = () => {
+  document.getElementById("loadMoreSqueals").style.display = "";
+  document.getElementById("loadMoreSquealsEnd").style.display = "none";
+  date = -1;
+  alphabeticSender = 0;
+  channelTypeName = "";
+  loadAndManipulateTemplate();
+};
+
 // Funzione per caricare e manipolare il template contenente userList
 const loadAndManipulateTemplate = async () => {
   pageNum = 0;
@@ -230,7 +278,27 @@ const loadAndManipulateTemplate = async () => {
     });
     //!  SQUEAL PAGE
   } else if (squealList) {
-    const squeals = await listSqueals();
+    const orderSenderName = document.getElementById("orderSenderName");
+    const privateGroup = document.getElementById("privateGroup");
+    const publicGroup = document.getElementById("publicGroup");
+    const modGroup = document.getElementById("modGroup");
+    const orderDate = document.getElementById("orderDate");
+    orderSenderName.removeEventListener("click", handleSenderNameOrder);
+    privateGroup.removeEventListener("click", handlePrivateGroupOrder);
+    publicGroup.removeEventListener("click", handlePublicGroupOrder);
+    modGroup.removeEventListener("click", handleModGroupOrder);
+    orderDate.removeEventListener("click", handleDateOrder);
+    orderSenderName.addEventListener("click", handleSenderNameOrder);
+    privateGroup.addEventListener("click", handlePrivateGroupOrder);
+    publicGroup.addEventListener("click", handlePublicGroupOrder);
+    modGroup.addEventListener("click", handleModGroupOrder);
+    orderDate.addEventListener("click", handleDateOrder);
+
+    const squeals = await listSquealsSorted(
+      alphabeticSender,
+      channelTypeName,
+      date
+    );
     console.log(squeals);
 
     // Pulisci la lista utenti prima di aggiornarla
@@ -452,6 +520,7 @@ const loadMoreUsers = async () => {
           <p class="list-text"><strong>Ch:</strong> ${
             user?.n_characters.remainingChars
           }</p>
+          <p class="list-text"><strong>Views:</strong> ${user?.views}</p>
           </div>
           <div>
           ${
@@ -596,10 +665,36 @@ const listSqueals = async () => {
   }
 };
 
+const listSquealsSorted = async (alphabetic, channel, date) => {
+  console.log("listSqueal");
+  const url =
+    baseUrl +
+    `api/squeal-list/filtered/?page=${pageNum}&size=${size}&bySender=${alphabetic}&byChannelType=${channel}&byTimestamp=${date}`;
+  console.log(url);
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
 const loadMoreSqueals = async () => {
   console.log("loadMoreSqueals");
   pageNum++; // Incrementa il numero di pagina corrente
-  const squeals = await listSqueals();
+  const squeals = await listSquealsSorted(
+    alphabeticSender,
+    channelTypeName,
+    date
+  );
   if (squeals.length == 0) {
     document.getElementById("loadMoreSqueals").style.display = "none";
   }

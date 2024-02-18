@@ -6,7 +6,6 @@
     <title>Squeal Page</title>
   </head>
   <body>
-    <!--ordire per mittente(alfabetico), destinatari(alfabetico?) e data(recente-meno recente)-->
 
     <!--Extra: eliminare squeal-->
     <div class="w-full h-full justify-center align-middle">
@@ -14,16 +13,31 @@
         <h1 class="text-[40px] mr-10">Squeal Page - Mod</h1>
         <button
           class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="orderSenderName"
         >
           Sender Name
         </button>
         <button
           class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="privateGroup"
         >
-          Dest Name
+          Private Group
         </button>
         <button
           class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="publicGroup"
+        >
+          Public Group
+        </button>
+        <button
+          class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="modGroup"
+        >
+          Mod Group
+        </button>
+        <button
+          class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="orderDate"
         >
           Date
         </button>
@@ -41,6 +55,12 @@
         >
           Load More
         </button>
+        <p
+          id="loadMoreSquealsEnd"
+          class="mt-6 text-blck p-2 font-semibold hidden"
+        >
+          Non ci sono più elementi
+        </p>
       </div>
       <div id="modal" class="modal">
         <div id="modal-content" class="modal-content"></div>
