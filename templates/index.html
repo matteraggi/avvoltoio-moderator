@@ -8,8 +8,40 @@
   <body>
     <!--mostrare numero caratteri e popolarità-->
     <!--ordine per nome(alfabetico), popolarità(più popolare, meno popolare) e tipo utenti(solo vip, solo smm, ...)-->
-    <div class="w-full h-full justify-center align-middle">
-      <h1 class="text-[40px] text-center pb-4">Home Page - User Mod</h1>
+    <div class="w-full h-full justify-center align-center">
+      <div class="flex pb-4 items-end">
+        <h1 class="text-[40px] mr-10">Home Page - User Mod</h1>
+        <button
+          class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="orderName"
+        >
+          Name
+        </button>
+        <button
+          class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="orderPopularity"
+        >
+          Popularity
+        </button>
+        <button
+          class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="orderTypeVip"
+        >
+          VIP
+        </button>
+        <button
+          class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="orderTypeSmm"
+        >
+          SMM
+        </button>
+        <button
+          class="border-solid border-4 border-blue-500 pl-3 pr-3 rounded-2xl mr-10 h-fit text-[22px] font-semibold mb-2"
+          id="orderTypeMod"
+        >
+          MOD
+        </button>
+      </div>
       <div
         class="h-full w-full border-4 border-black text-center overflow-y-scroll"
       >
@@ -23,6 +55,9 @@
         >
           Load More
         </button>
+        <p id="loadMoreUsersEnd" class="mt-6 text-blck p-2 font-semibold hidden">
+          Non ci sono più elementi
+        </p>
       </div>
     </div>
   </body>

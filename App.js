@@ -2,9 +2,9 @@
 const pageTitle = "Squealer Moderator Dashboard";
 const baseUrl = "http://localhost:8000/";
 const size = 6;
-var userAlphabeticalOrder = 0;
-var userPopularityOrder = 0;
-var userDateOrder = 1;
+var alphabetic = 0;
+var popularity = 0;
+var type = 0;
 
 const routes = {
   404: {
@@ -106,6 +106,51 @@ const urlLocationHandler = async () => {
 window.addEventListener("hashchange", urlLocationHandler);
 urlLocationHandler();
 
+const handleNameOrder = () => {
+  document.getElementById("loadMoreUsers").style.display = "";
+  document.getElementById("loadMoreUsersEnd").style.display = "none";
+  alphabetic = 1;
+  popularity = 0;
+  type = 0;
+  loadAndManipulateTemplate();
+};
+
+const handlePopularityOrder = () => {
+  document.getElementById("loadMoreUsers").style.display = "";
+  document.getElementById("loadMoreUsersEnd").style.display = "none";
+  popularity = 1;
+  alphabetic = 0;
+  type = 0;
+  loadAndManipulateTemplate();
+};
+
+const handleTypeOrderVip = () => {
+  document.getElementById("loadMoreUsers").style.display = "";
+  document.getElementById("loadMoreUsersEnd").style.display = "none";
+  type = "ROLE_VIP";
+  alphabetic = 0;
+  popularity = 0;
+  loadAndManipulateTemplate();
+};
+
+const handleTypeOrderSmm = () => {
+  document.getElementById("loadMoreUsers").style.display = "";
+  document.getElementById("loadMoreUsersEnd").style.display = "none";
+  type = "ROLE_SMM";
+  alphabetic = 0;
+  popularity = 0;
+  loadAndManipulateTemplate();
+};
+
+const handleTypeOrderMod = () => {
+  document.getElementById("loadMoreUsers").style.display = "";
+  document.getElementById("loadMoreUsersEnd").style.display = "none";
+  type = "ROLE_ADMIN";
+  alphabetic = 0;
+  popularity = 0;
+  loadAndManipulateTemplate();
+};
+
 // Funzione per caricare e manipolare il template contenente userList
 const loadAndManipulateTemplate = async () => {
   pageNum = 0;
@@ -118,7 +163,23 @@ const loadAndManipulateTemplate = async () => {
   //!  HOME/USER PAGE
   if (userList) {
     //API LIST USERS
-    const users = await listUsers();
+    const orderName = document.getElementById("orderName");
+    const orderPopularity = document.getElementById("orderPopularity");
+    const orderTypeVip = document.getElementById("orderTypeVip");
+    const orderTypeSmm = document.getElementById("orderTypeSmm");
+    const orderTypeMod = document.getElementById("orderTypeMod");
+    orderName.removeEventListener("click", handleNameOrder);
+    orderPopularity.removeEventListener("click", handlePopularityOrder);
+    orderTypeVip.removeEventListener("click", handleTypeOrderVip);
+    orderTypeSmm.removeEventListener("click", handleTypeOrderSmm);
+    orderTypeMod.removeEventListener("click", handleTypeOrderMod);
+    orderName.addEventListener("click", handleNameOrder);
+    orderPopularity.addEventListener("click", handlePopularityOrder);
+    orderTypeVip.addEventListener("click", handleTypeOrderVip);
+    orderTypeSmm.addEventListener("click", handleTypeOrderSmm);
+    orderTypeMod.addEventListener("click", handleTypeOrderMod);
+
+    const users = await listUsersSorted(alphabetic, popularity, type);
     console.log(users);
 
     // Pulisci la lista utenti prima di aggiornarla
@@ -144,19 +205,24 @@ const loadAndManipulateTemplate = async () => {
         <h2 class="list-header">${user?.login}</h2>
         <p class="list-text"><strong>Mail:</strong> ${user?.email}</p>
         <p class="list-text"><strong>Auth:</strong> ${user?.authorities}</p>
+        <p class="list-text"><strong>Ch:</strong> ${
+          user?.n_characters.remainingChars
+        }</p>
+        <p class="list-text"><strong>Views:</strong> ${user?.views}</p>
         </div>
         <div>
         ${
           user.activated
-            ? `<button class="list-button color-red" onclick="blockUser('${user?.login}', false)">Blocca</button>`
-            : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">Sblocca</button>`
+            ? `<button  class="list-button color-red" onclick="blockUser('${user?.login}', false)">🔒</button>`
+            : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">🔓</button>`
         }
+
         <input type="number" id="numCharacters${
           user?.login
         }" placeholder="Num. caratteri" class="list-input"/>
         <button class="list-button color-purple" onclick="changeCharacters('${
           user?.login
-        }')">⬆️ / ⬇️ Caratteri</button>
+        }')">⬆️ / ⬇️ Ch</button>
         </div>
       </div>
       `;
@@ -270,13 +336,10 @@ const loadAndManipulateTemplate = async () => {
       <div class="el1">
       <button class="list-button color-green" onclick="openAddSquealModal('${
         channel?.channel.name
-      }', '${channel?.channel.type}', '${
-        channel?.channel._id
-      }')">Squealla</button>
+      }', '${channel?.channel.type}', '${channel?.channel._id}')">Posta</button>
         <button class="list-button color-red" onclick="deleteChannel('${
           channel?.channel._id
         }')">Elimina Canale</button>
-          
       </div>
       </div>
       `;
@@ -332,9 +395,11 @@ window.onload = function () {
 //! USER SECTION
 
 var pageNum = 0;
-const listUsers = async () => {
-  console.log("listUsers");
-  const url = baseUrl + `api/account/list-users/?page=${pageNum}&size=${size}`;
+
+const listUsersSorted = async (alphabetic, popularity, type) => {
+  const url =
+    baseUrl +
+    `api/users/search-filtered/?page=${pageNum}&size=${size}&byName=${alphabetic}&byRole=${type}&byPopularity=${popularity}`;
   console.log(url);
   try {
     const response = await fetch(url, {
@@ -355,9 +420,10 @@ const listUsers = async () => {
 const loadMoreUsers = async () => {
   console.log("loadMoreUsers");
   pageNum++; // Incrementa il numero di pagina corrente
-  const users = await listUsers();
+  const users = await listUsersSorted(alphabetic, popularity, type);
   if (users.length == 0) {
     document.getElementById("loadMoreUsers").style.display = "none";
+    document.getElementById("loadMoreUsersEnd").style.display = "block";
   }
 
   const userList = document.getElementById("userList");
@@ -383,12 +449,15 @@ const loadMoreUsers = async () => {
           <h2 class="list-header">${user?.login}</h2>
           <p class="list-text"><strong>Mail:</strong> ${user?.email}</p>
           <p class="list-text"><strong>Auth:</strong> ${user?.authorities}</p>
+          <p class="list-text"><strong>Ch:</strong> ${
+            user?.n_characters.remainingChars
+          }</p>
           </div>
           <div>
           ${
             user.activated
-              ? `<button  class="list-button color-red" onclick="blockUser('${user?.login}', false)">Blocca</button>`
-              : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">Sblocca</button>`
+              ? `<button  class="list-button color-red" onclick="blockUser('${user?.login}', false)">🔒</button>`
+              : `<button class="list-button color-green" onclick="blockUser('${user?.login}', true)">🔓</button>`
           }
 
         <input type="number" id="numCharacters${
@@ -396,7 +465,7 @@ const loadMoreUsers = async () => {
         }" placeholder="Num. caratteri" class="list-input" />
         <button class="list-button color-purple" onclick="changeCharacters('${
           user?.login
-        }')">⬆️ / ⬇️ Caratteri</button>
+        }')">⬆️ / ⬇️ Ch</button>
           </div>
         </div>
               `;
@@ -426,13 +495,13 @@ async function blockUser(userLogin, block) {
 
       if (block) {
         console.log(`Utente ${userLogin} sbloccato con successo`);
-        blockButton.textContent = "Blocca";
+        blockButton.textContent = "🔒";
         blockButton.classList.remove("color-green");
         blockButton.classList.add("color-red");
         blockButton.setAttribute("onclick", `blockUser('${userLogin}', false)`);
       } else {
         console.log(`Utente ${userLogin} bloccato con successo`);
-        blockButton.textContent = "Sblocca";
+        blockButton.textContent = "🔓";
         blockButton.classList.remove("color-red");
         blockButton.classList.add("color-green");
         blockButton.setAttribute("onclick", `blockUser('${userLogin}', true)`);
@@ -837,9 +906,7 @@ const loadMoreChannels = async () => {
       <div class="el1">
       <button class="list-button color-green" onclick="openAddSquealModal('${
         channel?.channel.name
-      }', '${channel?.channel.type}', '${
-        channel?.channel._id
-      }')">Squealla</button>
+      }', '${channel?.channel.type}', '${channel?.channel._id}')">Posta</button>
         <button class="list-button color-red" onclick="deleteChannel('${
           channel?.channel._id
         }')">Elimina Canale</button>
