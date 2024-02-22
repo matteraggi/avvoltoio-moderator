@@ -15,6 +15,10 @@ ul {
   width: 100%;
 }
 
+.margin {
+  margin-right: 10px;
+}
+
 li {
   float: left;
 }
@@ -238,17 +242,17 @@ li a:hover:not(.active) {
   margin-left: 50px;
 }
 
-.color-blue{
+.color-blue {
   color: blue;
 }
 
-.channel-description{
+.channel-description {
   color: gray;
   font-style: italic;
   margin-bottom: 20px;
 }
 
-.channel-desc-box{
+.channel-desc-box {
   display: flex;
   gap: 20px;
 }

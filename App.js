@@ -1,6 +1,6 @@
 //! ROUTING E AUTHENTICATION
 const pageTitle = "Squealer Moderator Dashboard";
-const baseUrl = "http://localhost:8000/";
+const baseUrl = "https://site222347.tw.cs.unibo.it/";
 const size = 6;
 var alphabetic = 0;
 var popularity = 0;
@@ -11,27 +11,27 @@ var date = 0;
 
 const routes = {
   404: {
-    template: "/templates/404.html",
+    template: "./templates/404.html",
     title: "404 | " + pageTitle,
     description: "Page not found",
   },
   "#/": {
-    template: "/templates/index.html",
+    template: "./templates/index.html",
     title: "Home | " + pageTitle,
     description: "Home Page",
   },
   squeal: {
-    template: "/templates/squeal.html",
+    template: "./templates/squeal.html",
     title: "Squeal | " + pageTitle,
     description: "Squeal page",
   },
   channels: {
-    template: "/templates/channels.html",
+    template: "./templates/channels.html",
     title: "Channels | " + pageTitle,
     description: "Channels page",
   },
   login: {
-    template: "/templates/login.html",
+    template: "./templates/login.html",
     title: "Login | " + pageTitle,
     description: "Login Page",
   },
@@ -239,14 +239,14 @@ const loadAndManipulateTemplate = async () => {
       const userElement = document.createElement("div");
       userElement.classList.add("user");
 
-      if (user?.img_content_type != null) {
-        url = `data: ${user.img_content_type}  ;base64, ${user.img}`;
+      if (user?.img != null) {
+        url = `data: image/jpeg  ;base64, ${user.img}`;
       }
       userElement.innerHTML = `
       <div class="list-element" data-user-login="${user?.login}">
       <div class="el1">
       ${
-        user.img_content_type
+        user.img
           ? `<img class="list-image" src="${url}" alt="Avatar" />`
           : `<img class="list-image" src="/favicon.ico" alt="Avatar" />`
       }
@@ -266,10 +266,10 @@ const loadAndManipulateTemplate = async () => {
         }
 
         <input type="number" id="numCharacters${
-          user?.login
+          user?._id
         }" placeholder="Num. caratteri" class="list-input"/>
         <button class="list-button color-purple" onclick="changeCharacters('${
-          user?.login
+          user?._id
         }')">⬆️ / ⬇️ Ch</button>
         </div>
       </div>
@@ -332,6 +332,9 @@ const loadAndManipulateTemplate = async () => {
         </div>
 
         <div class="el1">
+        <button class="list-button color-red margin" onclick="deleteUser('${
+          squeal?.squeal._id
+        }')">Elimina Squeal</button>
         <div class="list-destinations" id="${squeal?.squeal._id}">
         ${squeal.squeal.destination
           .map(
@@ -346,13 +349,13 @@ const loadAndManipulateTemplate = async () => {
         squeal.positive
       }"/>
           
-        <img src="/like.svg" alt="SVG Image" class="list-emote">
+        <img src="./public/like.svg" alt="SVG Image" class="list-emote">
         <input type="number" id="neg-${
           squeal?.squeal._id
         }" name="neg" class="list-reaction-input" placeholder="${
         squeal.negative
       }"/>
-        <img src="/dislike.svg" alt="SVG Image" class="list-emote">
+        <img src="./public/dislike.svg" alt="SVG Image" class="list-emote">
         <input type="submit" value="🔄" class="list-reaction-button" onclick="changeReaction('${
           squeal.squeal._id
         }', document.getElementById('pos-${
@@ -502,15 +505,15 @@ const loadMoreUsers = async () => {
       const userElement = document.createElement("div");
       userElement.classList.add("user");
 
-      if (user?.img_content_type != null) {
-        url = `data: ${user.img_content_type}  ;base64, ${user.img}`;
+      if (user?.img != null) {
+        url = `data: image/jpeg  ;base64, ${user.img}`;
       }
 
       userElement.innerHTML = `
         <div class="list-element" data-user-login="${user?.login}">
         <div class="el1">
           ${
-            user.img_content_type
+            user.img
               ? `<img class="list-image" src="${url}" alt="Avatar" />`
               : `<img class="list-image" src="/favicon.ico" alt="Avatar" />`
           }
@@ -530,10 +533,10 @@ const loadMoreUsers = async () => {
           }
 
         <input type="number" id="numCharacters${
-          user?.login
+          user?._id
         }" placeholder="Num. caratteri" class="list-input" />
         <button class="list-button color-purple" onclick="changeCharacters('${
-          user?.login
+          user?._id
         }')">⬆️ / ⬇️ Ch</button>
           </div>
         </div>
@@ -590,6 +593,7 @@ async function changeCharacters(userLogin) {
     const numCharactersInput = document.getElementById(
       `numCharacters${userLogin}`
     );
+    console.log(numCharactersInput);
     const numCharacters = numCharactersInput.value;
 
     // Verifica se il valore è valido (es. non vuoto, è un numero, ecc.)
@@ -608,9 +612,9 @@ async function changeCharacters(userLogin) {
     }
 
     // Continua con la tua logica per cambiare i caratteri utilizzando il valore recuperato
-    const now = new Date();
+    const now = Date.now();
     const thirtyOneDaysInMilliseconds = 31 * 24 * 60 * 60 * 1000;
-    const futureDate = new Date(now.getTime() + thirtyOneDaysInMilliseconds);
+    const futureDate = new Date(now + thirtyOneDaysInMilliseconds);
     const futureTimestamp = futureDate.getTime();
 
     const response = await fetch(baseUrl + `api/account/admin-extra`, {
@@ -622,8 +626,9 @@ async function changeCharacters(userLogin) {
       body: JSON.stringify({
         admin_extra: {
           n_characters: numCharactersInt,
-          user_id: userLogin,
-          timestamp: futureTimestamp,
+          user_id: userLogin.toString(),
+          timestamp: Date.now(),
+          valid_until: futureTimestamp,
         },
       }),
     });
@@ -631,6 +636,7 @@ async function changeCharacters(userLogin) {
       console.log(
         `Caratteri modificati per l'utente ${userLogin}, ${numCharactersInt} caratteri fino al ${futureDate}`
       );
+      console.log(numCharactersInt, userLogin, futureTimestamp);
       // Aggiorna la lista degli utenti dopo aver cambiato i caratteri
       await loadAndManipulateTemplate();
     } else {
@@ -729,6 +735,9 @@ const loadMoreSqueals = async () => {
         </div>
 
         <div class="el1">
+        <button class="list-button color-red margin" onclick="deleteUser('${
+          squeal?.squeal._id
+        }')">Elimina Squeal</button>
         <div class="list-destinations" id="${squeal?.squeal._id}">
         ${squeal.squeal.destination
           .map(
@@ -743,13 +752,13 @@ const loadMoreSqueals = async () => {
           }" name="pos" class="list-reaction-input" placeholder="${
         squeal.positive
       }"/>
-          <img src="/like.svg" alt="SVG Image" class="list-emote">
+          <img src="./public/like.svg" alt="SVG Image" class="list-emote">
           <input type="number" id="neg-${
             squeal?.squeal._id
           }" name="neg" class="list-reaction-input" placeholder="${
         squeal.negative
       }"/>
-          <img src="/dislike.svg" alt="SVG Image" class="list-emote">
+          <img src="./public/like.svg" alt="SVG Image" class="list-emote">
           <input type="submit" value="🔄" class="list-reaction-button" onclick="changeReaction('${
             squeal.squeal._id
           }', document.getElementById('pos-${
@@ -1292,6 +1301,25 @@ const changeDesc = async (channelId) => {
       console.log(`Nuova Descrizione`);
     } else {
       console.error("Errore durante l'aggiornamento descrizione");
+    }
+  } catch (error) {
+    console.error("Errore durante la chiamata API:", error);
+  }
+};
+
+const deleteUser = async (id) => {
+  try {
+    const response = await fetch(baseUrl + `api/squeals/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token"),
+      },
+    });
+    if (response.ok) {
+      alert("Squeal eliminato con successo");
+    } else {
+      console.error("Errore durante l'eliminazione");
     }
   } catch (error) {
     console.error("Errore durante la chiamata API:", error);

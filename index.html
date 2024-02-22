@@ -2,11 +2,13 @@
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.ico" />
-    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="icon" type="image/svg+xml" href="./public/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <link rel="stylesheet" type="text/css" href="./output.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moderator Dashboard</title>
     <script src="./App.js" defer></script>
+    <base href="/mod/" />
   </head>
   <body>
     <ul class="w-full flex justify-center">
@@ -15,12 +17,14 @@
           Admin Dashboard
         </p>
         <div class="self-center">
-          <li class="cursor-pointer"><a href="/#">User</a></li>
+          <li class="cursor-pointer"><a href="#">User</a></li>
           <li class="cursor-pointer"><a href="#squeal">Squeal</a></li>
-          <li class="cursor-pointer"><a href="#channels">Channels</a></li>
+          <li class="cursor-pointer">
+            <a href="#channels">Channels</a>
+          </li>
         </div>
         <div class="py-4 w-[250px] flex justify-end">
-          <img src="/favicon.ico" alt="logo" width="50" />
+          <img src="./public/favicon.ico" alt="logo" width="50" />
         </div>
       </div>
     </ul>
